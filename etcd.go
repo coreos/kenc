@@ -1,4 +1,4 @@
-package kenc
+package main
 
 import (
 	"encoding/json"
@@ -32,11 +32,17 @@ type Endpoints struct {
 }
 
 type endpointsCheckpointer struct {
-	k8s kubernetes.Interface
+	kubecli kubernetes.Interface
+}
+
+func newEndpointCheckpointer(kubecli kubernetes.Interface) *endpointsCheckpointer {
+	return &endpointsCheckpointer{
+		kubecli: kubecli,
+	}
 }
 
 func (ec *endpointsCheckpointer) checkpoint() error {
-	eps, err := getEndpoints(ec.k8s)
+	eps, err := getEndpoints(ec.kubecli)
 	if err != nil {
 		return err
 	}
@@ -87,7 +93,7 @@ func getEndpointsFromCheckpoint() ([]string, error) {
 	return eps.Endpoints, nil
 }
 
-func getEndpoints(k8s kubernetes.Interface) ([]string, error) {
+func getEndpoints(kubecli kubernetes.Interface) ([]string, error) {
 	ls := map[string]string{
 		cluterLabel: clusterName,
 		appLabel:    appName,
@@ -95,7 +101,7 @@ func getEndpoints(k8s kubernetes.Interface) ([]string, error) {
 
 	// TODO: use client side cache
 	lo := v1.ListOptions{LabelSelector: labels.SelectorFromSet(ls).String()}
-	podList, err := k8s.Core().Pods(ns).List(lo)
+	podList, err := kubecli.Core().Pods(ns).List(lo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list running self hosted etcd pods: %v", err)
 	}
