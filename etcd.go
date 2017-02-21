@@ -32,7 +32,8 @@ type Endpoints struct {
 }
 
 type endpointsCheckpointer struct {
-	kubecli kubernetes.Interface
+	kubecli   kubernetes.Interface
+	endpoints []string
 }
 
 func newEndpointCheckpointer(kubecli kubernetes.Interface) *endpointsCheckpointer {
@@ -47,6 +48,7 @@ func (ec *endpointsCheckpointer) checkpoint() error {
 		return err
 	}
 
+	ec.endpoints = eps
 	epss := Endpoints{
 		Endpoints: eps,
 	}
