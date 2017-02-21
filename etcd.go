@@ -14,9 +14,7 @@ import (
 )
 
 const (
-	endpointsCheckpointDir   = "/etc/kubernetes/selfhosted-etcd"
-	dirperm                  = 0700
-	endpointspCheckpointFile = "endpoints"
+	endpointsCheckpointFile = "endpoints.checkpoint"
 
 	ns = "kube-system"
 
@@ -59,12 +57,7 @@ func (ec *endpointsCheckpointer) checkpoint() error {
 	}
 
 	// TODO: return if there is no change
-	err = os.MkdirAll(endpointsCheckpointDir, dirperm)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(path.Join(endpointsCheckpointDir, endpointspCheckpointFile))
+	f, err := os.Create(path.Join(checkpointDir, endpointsCheckpointFile))
 	if err != nil {
 		return err
 	}
@@ -82,7 +75,7 @@ func (ec *endpointsCheckpointer) checkpoint() error {
 
 // getEndpointsFromCheckpoint returns the endpoints from a previous checkpoint file.
 func getEndpointsFromCheckpoint() ([]string, error) {
-	b, err := ioutil.ReadFile(path.Join(endpointsCheckpointDir, endpointspCheckpointFile))
+	b, err := ioutil.ReadFile(path.Join(checkpointDir, endpointsCheckpointFile))
 	if err != nil {
 		return nil, err
 	}

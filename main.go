@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"k8s.io/client-go/kubernetes"
@@ -17,6 +18,9 @@ const (
 
 	modeEndpointsCheckpoint = "endpoints"
 	modeIptablesCheckpoint  = "iptables"
+
+	checkpointDir = "/etc/kubernetes/selfhosted-etcd"
+	dirperm       = 0700
 )
 
 var (
@@ -29,6 +33,11 @@ func init() {
 }
 
 func main() {
+	err := os.MkdirAll(checkpointDir, dirperm)
+	if err != nil {
+		log.Fatalf("failed to create checkpoint dir: %v", mode)
+	}
+
 	switch mode {
 	case modeEndpointsCheckpoint:
 		runEndpointsMode()
@@ -72,7 +81,22 @@ func runEndpointsMode() {
 }
 
 func runIptablesMode() {
-	panic("todo")
+	err := restoreIPtableFromFile(path.Join(checkpointDir, iptablesCheckpointFile))
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatalf("failed to restore iptables: %v", err)
+	}
+
+	ticker := time.NewTicker(checkpointInterval)
+
+	for {
+		select {
+		case <-ticker.C:
+			err := saveIPtable(path.Join(checkpointDir, iptablesCheckpointFile))
+			if err != nil {
+				log.Printf("failed to save iptables: %v", err)
+			}
+		}
+	}
 }
 
 func mustNewKubeClient() kubernetes.Interface {
