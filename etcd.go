@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -69,6 +70,21 @@ func (ec *endpointsCheckpointer) checkpoint() error {
 	}
 
 	return f.Sync()
+}
+
+// getEndpointsFromCheckpoint returns the endpoints from a previous checkpoint file.
+func getEndpointsFromCheckpoint() ([]string, error) {
+	b, err := ioutil.ReadFile(path.Join(endpointsCheckpointDir, endpointspCheckpointFile))
+	if err != nil {
+		return nil, err
+	}
+
+	var eps Endpoints
+	if err = json.Unmarshal(b, &eps); err != nil {
+		return nil, err
+	}
+
+	return eps.Endpoints, nil
 }
 
 func getEndpoints(k8s kubernetes.Interface) ([]string, error) {
