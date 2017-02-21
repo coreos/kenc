@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"k8s.io/client-go/kubernetes"
@@ -10,10 +11,22 @@ import (
 
 const (
 	checkpointInterval = time.Minute
+
+	vip = "todo"
 )
 
 func main() {
-	// TODO: recover
+	eps, err := getEndpointsFromCheckpoint()
+	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Fatalf("cannot open endpoints checkpoint file: %v", err)
+		}
+	} else {
+		err = writeNatTableRule(vip, eps)
+		if err != nil {
+			log.Fatalf("cannot setup iptable rules for recovery: %v", err)
+		}
+	}
 
 	cp := newEndpointCheckpointer(mustNewKubeClient())
 
@@ -24,9 +37,12 @@ func main() {
 		case <-ticker.C:
 			err := cp.checkpoint()
 			if err != nil {
-				log.Println("failed to checkpoint etcd endpoints:", err)
+				log.Printf("failed to checkpoint etcd endpoints: %v", err)
 			}
-			// TODO: setup iptable rules based on the endpoints.
+			err = writeNatTableRule(vip, cp.endpoints)
+			if err != nil {
+				log.Printf("failed to update iptable rules: %v", err)
+			}
 		}
 	}
 }
