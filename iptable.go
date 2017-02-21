@@ -1,4 +1,4 @@
-package kenc
+package main
 
 // writeNatTableRule writes a iptables NAT rule to forward the
 // packets sent to the given vip to one of the given endpoints
