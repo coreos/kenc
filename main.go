@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"time"
@@ -13,9 +14,32 @@ const (
 	checkpointInterval = time.Minute
 
 	vip = "todo"
+
+	modeEndpointsCheckpoint = "endpoints"
+	modeIptablesCheckpoint  = "iptables"
 )
 
+var (
+	mode string
+)
+
+func init() {
+	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
+	flag.Parse()
+}
+
 func main() {
+	switch mode {
+	case modeEndpointsCheckpoint:
+		runEndpointsMode()
+	case modeIptablesCheckpoint:
+		runIptablesMode()
+	default:
+		log.Fatalf("unknown mode: %v", mode)
+	}
+}
+
+func runEndpointsMode() {
 	eps, err := getEndpointsFromCheckpoint()
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -45,6 +69,10 @@ func main() {
 			}
 		}
 	}
+}
+
+func runIptablesMode() {
+	panic("todo")
 }
 
 func mustNewKubeClient() kubernetes.Interface {
