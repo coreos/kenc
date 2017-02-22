@@ -9,6 +9,9 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	utildbus "k8s.io/kubernetes/pkg/util/dbus"
+	utilexec "k8s.io/kubernetes/pkg/util/exec"
+	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 )
 
 const (
@@ -25,11 +28,16 @@ const (
 
 var (
 	mode string
+
+	// global iptables utility
+	ipt utiliptables.Interface
 )
 
 func init() {
 	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
 	flag.Parse()
+
+	ipt = utiliptables.New(utilexec.New(), utildbus.New(), utiliptables.ProtocolIpv4)
 }
 
 func main() {
@@ -55,7 +63,7 @@ func runEndpointsMode() {
 			log.Fatalf("cannot open endpoints checkpoint file: %v", err)
 		}
 	} else {
-		err = writeNatTableRule(vip, eps)
+		err = writeNatTableRule(ipt, vip, eps)
 		if err != nil {
 			log.Fatalf("cannot setup iptable rules for recovery: %v", err)
 		}
@@ -72,7 +80,7 @@ func runEndpointsMode() {
 			if err != nil {
 				log.Printf("failed to checkpoint etcd endpoints: %v", err)
 			}
-			err = writeNatTableRule(vip, cp.endpoints)
+			err = writeNatTableRule(ipt, vip, cp.endpoints)
 			if err != nil {
 				log.Printf("failed to update iptable rules: %v", err)
 			}
@@ -81,7 +89,7 @@ func runEndpointsMode() {
 }
 
 func runIptablesMode() {
-	err := restoreIPtableFromFile(path.Join(checkpointDir, iptablesCheckpointFile))
+	err := restoreIPtablesFromFile(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
 	if err != nil && !os.IsNotExist(err) {
 		log.Fatalf("failed to restore iptables: %v", err)
 	}
@@ -91,7 +99,7 @@ func runIptablesMode() {
 	for {
 		select {
 		case <-ticker.C:
-			err := saveIPtable(path.Join(checkpointDir, iptablesCheckpointFile))
+			err := saveIPtables(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
 			if err != nil {
 				log.Printf("failed to save iptables: %v", err)
 			}
