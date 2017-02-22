@@ -17,7 +17,7 @@ import (
 const (
 	checkpointInterval = time.Minute
 
-	vip = "todo"
+	vip = "10.3.0.15"
 
 	modeEndpointsCheckpoint = "endpoints"
 	modeIptablesCheckpoint  = "iptables"
@@ -57,6 +57,11 @@ func main() {
 }
 
 func runEndpointsMode() {
+	err := writeRouteRule(ipt, vip)
+	if err != nil {
+		log.Fatalf("cannot write route rule for checkpoint: %v", err)
+	}
+
 	eps, err := getEndpointsFromCheckpoint()
 	if err != nil {
 		if !os.IsNotExist(err) {
