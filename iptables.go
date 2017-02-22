@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
+	utiliptables "github.com/coreos/kenc/pkg/util/iptables"
 )
 
 const (

@@ -7,11 +7,12 @@ import (
 	"path"
 	"time"
 
+	utildbus "github.com/coreos/kenc/pkg/util/dbus"
+	utiliptables "github.com/coreos/kenc/pkg/util/iptables"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utilexec "k8s.io/kubernetes/pkg/util/exec"
-	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 )
 
 const (
@@ -43,7 +44,7 @@ func init() {
 func main() {
 	err := os.MkdirAll(checkpointDir, dirperm)
 	if err != nil {
-		log.Fatalf("failed to create checkpoint dir: %v", mode)
+		log.Fatalf("failed to create checkpoint dir: %v", err)
 	}
 
 	switch mode {

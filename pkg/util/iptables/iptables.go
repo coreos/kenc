@@ -24,9 +24,9 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	utildbus "github.com/coreos/kenc/pkg/util/dbus"
 	godbus "github.com/godbus/dbus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utilexec "k8s.io/kubernetes/pkg/util/exec"
 	utilversion "k8s.io/kubernetes/pkg/util/version"
 )
