@@ -57,6 +57,7 @@ func (ec *endpointsCheckpointer) checkpoint() error {
 	}
 
 	// TODO: return if there is no change
+	// TODO: create temp file to make save atomic
 	f, err := os.Create(path.Join(checkpointDir, endpointsCheckpointFile))
 	if err != nil {
 		return err
