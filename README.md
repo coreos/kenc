@@ -6,7 +6,7 @@ Kuberetes etcd network checkpointer
 
 - iptables
 
-Checkpoint/restore the NAT table. Rely on kube-proxy to populate iptables rules.
+Checkpoint/restore the NAT table. Kenc relies on kube-proxy to populate iptables rules and ensure connectivity in this mode.
 
 ```
 kenc -m iptables
@@ -14,7 +14,7 @@ kenc -m iptables
 
 - endpoints
 
-Checkpoint/restore etcd endpoints. Write iptables rules to iptables to ensure connectivity.
+Checkpoint/restore etcd endpoints. Kenc writes iptables rules to iptables to ensure connectivity periodically in this mode.
 
 To run this mode, `kenc` MUST be started inside Kubernetes.
 
