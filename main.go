@@ -8,11 +8,11 @@ import (
 	"time"
 
 	utildbus "github.com/coreos/kenc/pkg/util/dbus"
+	utilexec "github.com/coreos/kenc/pkg/util/exec"
 	utiliptables "github.com/coreos/kenc/pkg/util/iptables"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	utilexec "k8s.io/kubernetes/pkg/util/exec"
 )
 
 const (
