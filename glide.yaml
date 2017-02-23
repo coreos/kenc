@@ -1,0 +1,10 @@
+package: github.com/coreos/kenc
+import:
+- package: github.com/Sirupsen/logrus
+  version: v0.11.2
+- package: github.com/godbus/dbus
+  version: v4.0.0
+- package: k8s.io/apimachinery
+  version: 0f8a3af747f81547246d79ca00c20af330868fa6
+- package: k8s.io/client-go
+  version: v2.0.0
