@@ -18,6 +18,10 @@ var (
 )
 
 func writeRouteRule(ipt utiliptables.Interface, vip string) error {
+	_, err := ipt.EnsureChain(utiliptables.TableNAT, selfHostedetcdChain)
+	if err != nil {
+		return err
+	}
 	// ensure the traffic to the vip jumps to our chain
 	args := []string{
 		"-p", "tcp",
@@ -29,7 +33,7 @@ func writeRouteRule(ipt utiliptables.Interface, vip string) error {
 		"-j", string(selfHostedetcdChain),
 	}
 
-	_, err := ipt.EnsureRule(utiliptables.Prepend, utiliptables.TableNAT, utiliptables.ChainPrerouting, args...)
+	_, err = ipt.EnsureRule(utiliptables.Prepend, utiliptables.TableNAT, utiliptables.ChainPrerouting, args...)
 	if err != nil {
 		return err
 	}
