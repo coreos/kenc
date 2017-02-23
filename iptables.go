@@ -63,8 +63,8 @@ func writeNatTableRule(ipt utiliptables.Interface, vip string, endpoints []strin
 			"-m", "state",
 			"--state", "New",
 			"-m", "statistic",
-			"-mode", "random",
-			"--probability", fmt.Sprintf("%0.5f", 1.0/float64(i)),
+			"--mode", "random",
+			"--probability", fmt.Sprintf("%0.5f", 1.0/float64(i+1)),
 			"-j", "DNAT",
 			"--to-destination", e,
 		}
