@@ -23,12 +23,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	utildbus "github.com/coreos/kenc/pkg/util/dbus"
+	utilexec "github.com/coreos/kenc/pkg/util/exec"
+	utilversion "github.com/coreos/kenc/pkg/util/version"
+
+	"github.com/Sirupsen/logrus"
 	godbus "github.com/godbus/dbus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	utilexec "k8s.io/kubernetes/pkg/util/exec"
-	utilversion "k8s.io/kubernetes/pkg/util/version"
 )
 
 type RulePosition string
