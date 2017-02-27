@@ -29,6 +29,7 @@ const (
 
 var (
 	mode string
+	r    bool
 
 	// global iptables utility
 	ipt utiliptables.Interface
@@ -36,6 +37,7 @@ var (
 
 func init() {
 	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
+	flag.BoolVar(&r, "r", false, "network recovery only")
 	flag.Parse()
 
 	ipt = utiliptables.New(utilexec.New(), utildbus.New(), utiliptables.ProtocolIpv4)
@@ -58,21 +60,24 @@ func main() {
 }
 
 func runEndpointsMode() {
-	err := writeRouteRule(ipt, vip)
-	if err != nil {
-		log.Fatalf("cannot write route rule for checkpoint: %v", err)
-	}
-
-	eps, err := getEndpointsFromCheckpoint()
-	if err != nil {
-		if !os.IsNotExist(err) {
-			log.Fatalf("cannot open endpoints checkpoint file: %v", err)
-		}
-	} else {
-		err = writeNatTableRule(ipt, vip, eps)
+	if r {
+		err := writeRouteRule(ipt, vip)
 		if err != nil {
-			log.Fatalf("cannot setup iptable rules for recovery: %v", err)
+			log.Fatalf("cannot write route rule for checkpoint: %v", err)
 		}
+
+		eps, err := getEndpointsFromCheckpoint()
+		if err != nil {
+			if !os.IsNotExist(err) {
+				log.Fatalf("cannot open endpoints checkpoint file: %v", err)
+			}
+		} else {
+			err = writeNatTableRule(ipt, vip, eps)
+			if err != nil {
+				log.Fatalf("cannot setup iptable rules for recovery: %v", err)
+			}
+		}
+		os.Exit(0)
 	}
 
 	cp := newEndpointCheckpointer(mustNewKubeClient())
@@ -95,9 +100,12 @@ func runEndpointsMode() {
 }
 
 func runIptablesMode() {
-	err := restoreIPtablesFromFile(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
-	if err != nil && !os.IsNotExist(err) {
-		log.Fatalf("failed to restore iptables: %v", err)
+	if r {
+		err := restoreIPtablesFromFile(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
+		if err != nil && !os.IsNotExist(err) {
+			log.Fatalf("failed to restore iptables: %v", err)
+		}
+		os.Exit(0)
 	}
 
 	ticker := time.NewTicker(checkpointInterval)
