@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+if ! which go > /dev/null; then
+	echo "go not found"
+	exit 1
+fi
+
+out="$(pwd)/_output/bin"
+mkdir -p ${out} || true
+
+CGO_ENABLED=0 go build -o ${out}/kenc
