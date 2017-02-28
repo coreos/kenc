@@ -89,12 +89,17 @@ func writeNatTableRule(ipt utiliptables.Interface, vip string, endpoints []strin
 	return nil
 }
 
-// saveIPtable saves iptables rule into the given file
+// saveIPtable saves iptables rule related to etcd connectivity into the given file
 // This is used to implement iptable level checkpoint.
 func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 	b, err := ipt.SaveAll()
 	if err != nil {
 		return err
+	}
+
+	b, err = getKubeNATTableLines(b)
+	if err != nil {
+		return nil
 	}
 
 	// TODO: create temp file to make save atomic
