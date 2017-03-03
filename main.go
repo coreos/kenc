@@ -16,22 +16,22 @@ import (
 )
 
 const (
-	checkpointInterval = time.Minute
-
 	modeEndpointsCheckpoint = "endpoints"
 	modeIptablesCheckpoint  = "iptables"
 
 	dirperm = 0700
 
-	defaultVIP           = "10.3.0.15"
-	defaultCheckpointDir = "/etc/kubernetes/selfhosted-etcd"
+	defaultVIP            = "10.3.0.15"
+	defaultCheckpointDir  = "/etc/kubernetes/selfhosted-etcd"
+	defaultClusterInteval = 30 * time.Second
 )
 
 var (
-	mode          string
-	r             bool
-	vip           string
-	checkpointDir string
+	mode               string
+	r                  bool
+	vip                string
+	checkpointDir      string
+	checkpointInterval time.Duration
 
 	// global iptables utility
 	ipt utiliptables.Interface
@@ -39,9 +39,10 @@ var (
 
 func init() {
 	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
+	flag.BoolVar(&r, "r", false, "network recovery only")
 	flag.StringVar(&vip, "etcd-service-ip", defaultVIP, "the kuberentes service ip of the etcd cluster")
 	flag.StringVar(&checkpointDir, "checkpoint-dir", defaultCheckpointDir, "the directory to store/restore checkpoints")
-	flag.BoolVar(&r, "r", false, "network recovery only")
+	flag.DurationVar(&checkpointInterval, "checkpoint-interval", defaultClusterInteval, "the time interval to take checkpoints")
 	flag.Parse()
 
 	ipt = utiliptables.New(utilexec.New(), utildbus.New(), utiliptables.ProtocolIpv4)
