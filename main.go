@@ -21,16 +21,17 @@ const (
 	modeEndpointsCheckpoint = "endpoints"
 	modeIptablesCheckpoint  = "iptables"
 
-	checkpointDir = "/etc/kubernetes/selfhosted-etcd"
-	dirperm       = 0700
+	dirperm = 0700
 
-	defaultVIP = "10.3.0.15"
+	defaultVIP           = "10.3.0.15"
+	defaultCheckpointDir = "/etc/kubernetes/selfhosted-etcd"
 )
 
 var (
-	mode string
-	r    bool
-	vip  string
+	mode          string
+	r             bool
+	vip           string
+	checkpointDir string
 
 	// global iptables utility
 	ipt utiliptables.Interface
@@ -39,6 +40,7 @@ var (
 func init() {
 	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
 	flag.StringVar(&vip, "etcd-service-ip", defaultVIP, "the kuberentes service ip of the etcd cluster")
+	flag.StringVar(&checkpointDir, "checkpoint-dir", defaultCheckpointDir, "the directory to store/restore checkpoints")
 	flag.BoolVar(&r, "r", false, "network recovery only")
 	flag.Parse()
 
