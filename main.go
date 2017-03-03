@@ -38,7 +38,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&mode, "m", modeEndpointsCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
+	flag.StringVar(&mode, "m", modeIptablesCheckpoint, "kubernetes etcd netowrk checkpint mode (endpoints/iptables)")
 	flag.BoolVar(&r, "r", false, "network recovery only")
 	flag.StringVar(&vip, "etcd-service-ip", defaultVIP, "the kuberentes service ip of the etcd cluster")
 	flag.StringVar(&checkpointDir, "checkpoint-dir", defaultCheckpointDir, "the directory to store/restore checkpoints")
