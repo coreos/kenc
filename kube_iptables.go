@@ -45,6 +45,11 @@ func getKubeNATTableLines(save []byte) ([]byte, error) {
 		}
 	}
 
+	if ri >= len(save) {
+		// nothing to checkpoint
+		return nil, nil
+	}
+
 	var done bool
 	// parse table lines
 	for ri < len(save) && !done {
