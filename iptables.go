@@ -99,7 +99,7 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 
 	b, err = getKubeNATTableLines(b)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	// TODO: create temp file to make save atomic
