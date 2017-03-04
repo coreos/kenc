@@ -82,6 +82,7 @@ func getKubeNATTableLines(save []byte) ([]byte, error) {
 	}
 
 	after := []byte(strings.Join(lines, "\n"))
+	after = append(after, '\n')
 
 	return after, nil
 }
