@@ -9,7 +9,19 @@ if ! which go > /dev/null; then
 	exit 1
 fi
 
-out="$(pwd)/_output/bin"
-mkdir -p ${out} || true
+outdir="$PWD/_output/bin"
+mkdir -p ${outdir} || true
 
-CGO_ENABLED=0 go build -o ${out}/kenc
+
+if [ "$GOINSTALL" == "y" ]
+then
+	GOBIN=$outdir CGO_ENABLED=0 go install -installsuffix cgo
+else
+	CGO_ENABLED=0 go build -installsuffix cgo -o ${outdir}/kenc
+fi
+
+if [ "$BUILDCONTAINER" == "y" ]
+then
+  docker build -t $IMAGE -f ./hack/deploy/Dockerfile .
+  docker push $IMAGE
+fi
