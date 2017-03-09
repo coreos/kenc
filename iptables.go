@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 
 	utiliptables "github.com/coreos/kenc/pkg/util/iptables"
 )
@@ -89,7 +90,7 @@ func writeNatTableRule(ipt utiliptables.Interface, vip string, endpoints []strin
 
 // saveIPtable saves iptables rule related to etcd connectivity into the given file
 // This is used to implement iptable level checkpoint.
-func saveIPtables(ipt utiliptables.Interface, filepath string) error {
+func saveIPtables(ipt utiliptables.Interface, dir, filename string) error {
 	b, err := ipt.SaveAll()
 	if err != nil {
 		return err
@@ -100,7 +101,7 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 		return err
 	}
 
-	f, err := ioutil.TempFile("", "kenc-ipt")
+	f, err := ioutil.TempFile(dir, "tmp-ipt")
 	if err != nil {
 		return err
 	}
@@ -113,7 +114,13 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 	if err != nil {
 		return err
 	}
-	return os.Rename(f.Name(), filepath)
+	if err := f.Sync(); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(f.Name(), path.Join(dir, filename))
 }
 
 // restoreIPtableFromFile restores the iptable configuration from the give file
