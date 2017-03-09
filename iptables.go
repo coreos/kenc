@@ -113,6 +113,12 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 	if err != nil {
 		return err
 	}
+	if err := f.Sync(); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
 	return os.Rename(f.Name(), filepath)
 }
 
