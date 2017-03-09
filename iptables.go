@@ -85,8 +85,6 @@ func writeNatTableRule(ipt utiliptables.Interface, vip string, endpoints []strin
 			return err
 		}
 	}
-
-	return nil
 }
 
 // saveIPtable saves iptables rule related to etcd connectivity into the given file
@@ -102,11 +100,11 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 		return err
 	}
 
-	// TODO: create temp file to make save atomic
-	f, err := os.Create(filepath)
+	f, err := ioutil.TempFile("", "kenc-ipt")
 	if err != nil {
 		return err
 	}
+	defer os.Remove(f.Name())
 
 	n, err := f.Write(b)
 	if err == nil && n < len(b) {
@@ -115,8 +113,7 @@ func saveIPtables(ipt utiliptables.Interface, filepath string) error {
 	if err != nil {
 		return err
 	}
-
-	return f.Sync()
+	return os.Rename(f.Name(), filepath)
 }
 
 // restoreIPtableFromFile restores the iptable configuration from the give file
