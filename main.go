@@ -118,7 +118,7 @@ func runIptablesMode() {
 	for {
 		select {
 		case <-ticker.C:
-			err := saveIPtables(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
+			err := saveIPtables(ipt, checkpointDir, iptablesCheckpointFile)
 			if err != nil {
 				log.Printf("failed to save iptables: %v", err)
 			}
