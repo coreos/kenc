@@ -13,14 +13,14 @@ outdir="$PWD/_output/bin"
 mkdir -p ${outdir} || true
 
 
-if [ "$GOINSTALL" == "y" ]
+if [ ! -z ${GOINSTALL+x} ] && [ "${GOINSTALL}" = "y" ]
 then
 	GOBIN=$outdir CGO_ENABLED=0 go install -installsuffix cgo
 else
 	CGO_ENABLED=0 go build -installsuffix cgo -o ${outdir}/kenc
 fi
 
-if [ "$BUILDCONTAINER" == "y" ]
+if [ ! -z ${BUILDCONTAINER+x} ] &&  [ "$BUILDCONTAINER" == "y" ]
 then
   docker build -t $IMAGE -f ./hack/deploy/Dockerfile .
   docker push $IMAGE
