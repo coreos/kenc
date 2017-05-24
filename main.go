@@ -54,6 +54,27 @@ func main() {
 		log.Fatalf("failed to create checkpoint dir: %v", err)
 	}
 
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			// Just don't let it fail if it couldn't new client.
+			// Because we have another routine checkpointing other stuff (e.g. iptables).
+			// Better separate into two programs.
+			cfg, err := rest.InClusterConfig()
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+			kubecli, err := kubernetes.NewForConfig(cfg)
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+
+			runHostsCheckpointer(kubecli)
+		}
+	}()
+
 	switch mode {
 	case modeEndpointsCheckpoint:
 		runEndpointsMode()
