@@ -8,15 +8,15 @@ import (
 	"os"
 	"path"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/labels"
 )
 
 const (
 	endpointsCheckpointFile = "endpoints.checkpoint"
-
-	ns = "kube-system"
 
 	cluterLabel = "etcd_cluster"
 	clusterName = "kube-etcd"
@@ -96,8 +96,8 @@ func getEndpoints(kubecli kubernetes.Interface) ([]string, error) {
 	}
 
 	// TODO: use client side cache
-	lo := v1.ListOptions{LabelSelector: labels.SelectorFromSet(ls).String()}
-	podList, err := kubecli.Core().Pods(ns).List(lo)
+	lo := metav1.ListOptions{LabelSelector: labels.SelectorFromSet(ls).String()}
+	podList, err := kubecli.Core().Pods(api.NamespaceSystem).List(lo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list running self hosted etcd pods: %v", err)
 	}
