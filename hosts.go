@@ -16,7 +16,10 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 )
 
-const etcdHostsFilename = "etcd-hosts.checkpoint"
+const (
+	etcdDir           = "/var/etcd"
+	etcdHostsFilename = "etcd-hosts.checkpoint"
+)
 
 type hostInfo struct {
 	HostName string
@@ -36,7 +39,7 @@ func runHostsCheckpointer(kubecli kubernetes.Interface) {
 			if len(hosts) == 0 {
 				continue
 			}
-			fp := filepath.Join(checkpointDir, etcdHostsFilename)
+			fp := filepath.Join(etcdDir, etcdHostsFilename)
 			err = saveHostsCheckpoint(fp, hosts)
 			if err != nil {
 				log.Printf("failed to update etcd hosts file (%s): %v", fp, err)
@@ -75,7 +78,7 @@ func getHosts(kubecli kubernetes.Interface) ([]*hostInfo, error) {
 }
 
 func saveHostsCheckpoint(filepath string, hosts []*hostInfo) error {
-	f, err := ioutil.TempFile(checkpointDir, "tmp-etcd-hosts")
+	f, err := ioutil.TempFile(etcdDir, "tmp-etcd-hosts")
 	if err != nil {
 		return err
 	}
