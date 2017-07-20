@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	utiliptables "github.com/coreos/kenc/pkg/util/iptables"
@@ -9,6 +10,11 @@ import (
 
 const (
 	natTable = "nat"
+
+	// the services chain
+	kubeServicesChain utiliptables.Chain = "KUBE-SERVICES"
+	// the kubernetes postrouting chain
+	kubePostroutingChain utiliptables.Chain = "KUBE-POSTROUTING"
 )
 
 var kubeKeywords = map[string]bool{
@@ -25,6 +31,14 @@ var kubeKeywords = map[string]bool{
 	"KUBE-SEP-": true,
 	"KUBE-FW-":  true,
 	"KUBE-XLB-": true,
+}
+
+// Top level chains that will not be flushed in the restore transaction.
+var nonFlushChains = map[string]bool{
+	"-A PREROUTING":  true,
+	"-A POSTROUTING": true,
+	"-A INPUT":       true,
+	"-A OUTPUT":      true,
 }
 
 func getKubeNATTableLines(save []byte) ([]byte, error) {
@@ -67,6 +81,17 @@ func getKubeNATTableLines(save []byte) ([]byte, error) {
 		case strings.HasPrefix(line, "#"):
 			// ignore comment lines
 		default:
+			ok := true
+			for nc := range nonFlushChains {
+				if strings.HasPrefix(line, nc) {
+					ok = false
+					break
+				}
+			}
+			if !ok {
+				continue
+			}
+
 			// normal lines, save them if they match Kube rules
 			for k := range kubeKeywords {
 				if strings.Contains(line, k) {
@@ -85,4 +110,42 @@ func getKubeNATTableLines(save []byte) ([]byte, error) {
 	after = append(after, '\n')
 
 	return after, nil
+}
+
+func ensureLinkingChains(ipt utiliptables.Interface) error {
+	if _, err := ipt.EnsureChain(utiliptables.TableNAT, kubeServicesChain); err != nil {
+		log.Printf("Failed to ensure that %s chain %s exists: %v", utiliptables.TableNAT, kubeServicesChain, err)
+		return err
+	}
+
+	tableChainsNeedJumpServices := []struct {
+		table utiliptables.Table
+		chain utiliptables.Chain
+	}{
+		{utiliptables.TableNAT, utiliptables.ChainOutput},
+		{utiliptables.TableNAT, utiliptables.ChainPrerouting},
+	}
+	comment := "kubernetes service portals"
+	args := []string{"-m", "comment", "--comment", comment, "-j", string(kubeServicesChain)}
+	for _, tc := range tableChainsNeedJumpServices {
+		if _, err := ipt.EnsureRule(utiliptables.Prepend, tc.table, tc.chain, args...); err != nil {
+			log.Printf("Failed to ensure that %s chain %s jumps to %s: %v", tc.table, tc.chain, kubeServicesChain, err)
+			return err
+		}
+	}
+
+	// Create and link the kube postrouting chain.
+	if _, err := ipt.EnsureChain(utiliptables.TableNAT, kubePostroutingChain); err != nil {
+		log.Printf("Failed to ensure that %s chain %s exists: %v", utiliptables.TableNAT, kubePostroutingChain, err)
+		return err
+	}
+
+	comment = "kubernetes postrouting rules"
+	args = []string{"-m", "comment", "--comment", comment, "-j", string(kubePostroutingChain)}
+	if _, err := ipt.EnsureRule(utiliptables.Prepend, utiliptables.TableNAT, utiliptables.ChainPostrouting, args...); err != nil {
+		log.Printf("Failed to ensure that %s chain %s jumps to %s: %v", utiliptables.TableNAT, utiliptables.ChainPostrouting, kubePostroutingChain, err)
+		return err
+	}
+
+	return nil
 }
