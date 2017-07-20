@@ -1,18 +1,19 @@
 package main
 
 import (
-	"reflect"
+	"bytes"
 	"testing"
 )
 
-func TestPurgeNonKubeLinesForIPtables(t *testing.T) {
-	got, err := purgeNonKubeLinesForIPtables(exampleTables)
+func TestGetKubeNATTableLine(t *testing.T) {
+	got, err := getKubeNATTableLines(exampleTables)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(got, wantTables) {
-		t.Error("got wrong table after purging")
+	if !bytes.Equal(got, wantTables) {
+		t.Error("got wrong table")
+		t.Error(string(wantTables))
 		t.Error(string(got))
 	}
 }

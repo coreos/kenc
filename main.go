@@ -126,6 +126,11 @@ func runEndpointsMode() {
 }
 
 func runIptablesMode() {
+	err := ensureLinkingChains(ipt)
+	if err != nil {
+		log.Fatalf("failed to ensure iptables chains: %v", err)
+	}
+
 	if r {
 		err := restoreIPtablesFromFile(ipt, path.Join(checkpointDir, iptablesCheckpointFile))
 		if err != nil && !os.IsNotExist(err) {

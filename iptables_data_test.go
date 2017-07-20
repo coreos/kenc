@@ -134,11 +134,6 @@ var wantTables = []byte(`*nat
 :KUBE-SVC-TCOU7JCQXEZGVUNU - [0:0]
 :KUBE-SVC-XGLOHA7QRQ3V22RZ - [0:0]
 :KUBE-SVC-XP4WJ6VSLGWALMW5 - [0:0]
--A PREROUTING -m comment --comment "kube hostport portals" -m addrtype --dst-type LOCAL -j KUBE-HOSTPORTS
--A PREROUTING -m comment --comment "kubernetes service portals" -j KUBE-SERVICES
--A OUTPUT -m comment --comment "kube hostport portals" -m addrtype --dst-type LOCAL -j KUBE-HOSTPORTS
--A OUTPUT -m comment --comment "kubernetes service portals" -j KUBE-SERVICES
--A POSTROUTING -m comment --comment "kubernetes postrouting rules" -j KUBE-POSTROUTING
 -A KUBE-MARK-DROP -j MARK --set-xmark 0x8000/0x8000
 -A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000/0x4000
 -A KUBE-NODEPORTS -p tcp -m comment --comment "kube-system/default-http-backend:http" -m tcp --dport 31240 -j KUBE-MARK-MASQ
@@ -176,4 +171,5 @@ var wantTables = []byte(`*nat
 -A KUBE-SVC-TCOU7JCQXEZGVUNU -m comment --comment "kube-system/kube-dns:dns" -j KUBE-SEP-5QBP3MZSYLBKSV52
 -A KUBE-SVC-XGLOHA7QRQ3V22RZ -m comment --comment "kube-system/kubernetes-dashboard:" -j KUBE-SEP-KFPFIE7C3VJV2765
 -A KUBE-SVC-XP4WJ6VSLGWALMW5 -m comment --comment "kube-system/default-http-backend:http" -j KUBE-SEP-XDKEUXTVGH54XD6T
-COMMIT`)
+COMMIT
+`)
